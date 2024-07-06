@@ -1,10 +1,10 @@
 "use client"
 import React, { useState } from 'react';
+import axios from 'axios'; // Import axios for API calls
 import Head from 'next/head';
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 import DishCard from '../DishCard';
-
 
 interface Dish {
   name: string;
@@ -12,6 +12,7 @@ interface Dish {
   imageSrc: string;
   isVegetarian: boolean;
   category: string;
+  menu_id: string; // Add menu_id to Dish
 }
 
 interface CartItem extends Dish {
@@ -23,10 +24,10 @@ interface CartProps {
   onIncreaseQuantity: (name: string) => void;
   onDecreaseQuantity: (name: string) => void;
   onRemoveItem: (name: string) => void;
+  onSubmitOrder: () => void;
 }
 
-
-const Cart: React.FC<CartProps> = ({ cartItems, onIncreaseQuantity, onDecreaseQuantity, onRemoveItem }) => {
+const Cart: React.FC<CartProps> = ({ cartItems, onIncreaseQuantity, onDecreaseQuantity, onRemoveItem, onSubmitOrder }) => {
   if (cartItems.length === 0) return null;
 
   return (
@@ -59,40 +60,39 @@ const Cart: React.FC<CartProps> = ({ cartItems, onIncreaseQuantity, onDecreaseQu
         <input type="text" placeholder="Order Note..." className="w-full px-4 py-2 rounded-lg text-black" />
       </div>
       <div className="mt-4">
-       
-    <div className=' fixed bottom-6'>
-    <div className="flex justify-between">
-          <div>Discount</div>
-          <div>Rs 200</div>
+        <div className='fixed bottom-6'>
+          <div className="flex justify-between">
+            <div>Discount</div>
+            <div>Rs 200</div>
+          </div>
+          <div className="flex justify-between">
+            <div>Sub total</div>
+            <div>Rs {cartItems.reduce((total, item) => total + 199 * item.quantity, 0)}</div>
+          </div>
+          <div className="flex space-x-4 mt-4">
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">SAVE</button>
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg" onClick={onSubmitOrder}>PAY</button>
+          </div>
+          <div className="flex space-x-4 mt-4">
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Bill Preview</button>
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Print</button>
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">KOT</button>
+            <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Order Preview</button>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <div>Sub total</div>
-          <div>Rs {cartItems.reduce((total, item) => total + 199 * item.quantity, 0)}</div>
-        </div>
-        <div className="flex space-x-4 mt-4">
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">SAVE</button>
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">PAY</button>
-        </div>
-        <div className="flex space-x-4 mt-4">
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Bill Preview</button>
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Print</button>
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">KOT</button>
-          <button className="flex-1 bg-red-600 text-white py-2 rounded-lg">Order Preview</button>
-        </div>
-    </div>
       </div>
     </div>
   );
 };
 
 const allDishes: Dish[] = [
-  { name: 'Spicy seasoned seafood noodles', bowlsAvailable: 20, imageSrc: '/dish1.jpg', isVegetarian: false, category: 'Hot Dishes' },
-  { name: 'Salted Pasta with mushroom sauce', bowlsAvailable: 11, imageSrc: '/dish2.jpg', isVegetarian: true, category: 'Hot Dishes' },
-  { name: 'Beef dumpling in hot and sour soup', bowlsAvailable: 16, imageSrc: '/dish5.jpg', isVegetarian: false, category: 'Soup' },
-  { name: 'Grilled Chicken', bowlsAvailable: 20, imageSrc: '/dish6.jpg', isVegetarian: false, category: 'Grill' },
-  { name: 'Healthy noodle with spinach leaf', bowlsAvailable: 22, imageSrc: '/dish4.jpg', isVegetarian: true, category: 'Cold Dishes' },
-  { name: 'Hot spicy fried rice with omelet', bowlsAvailable: 13, imageSrc: '/dish3.jpg', isVegetarian: false, category: 'Hot Dishes' },
-  { name: 'Cheese Burger', bowlsAvailable: 10, imageSrc: '/images/dish7.jpg', isVegetarian: false, category: 'Appetizer' },
+  { name: 'Spicy seasoned seafood noodles', bowlsAvailable: 20, imageSrc: '/dish1.jpg', isVegetarian: false, category: 'Hot Dishes', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Salted Pasta with mushroom sauce', bowlsAvailable: 11, imageSrc: '/dish2.jpg', isVegetarian: true, category: 'Hot Dishes', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Beef dumpling in hot and sour soup', bowlsAvailable: 16, imageSrc: '/dish5.jpg', isVegetarian: false, category: 'Soup', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Grilled Chicken', bowlsAvailable: 20, imageSrc: '/dish6.jpg', isVegetarian: false, category: 'Grill', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Healthy noodle with spinach leaf', bowlsAvailable: 22, imageSrc: '/dish4.jpg', isVegetarian: true, category: 'Cold Dishes', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Hot spicy fried rice with omelet', bowlsAvailable: 13, imageSrc: '/dish3.jpg', isVegetarian: false, category: 'Hot Dishes', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
+  { name: 'Cheese Burger', bowlsAvailable: 10, imageSrc: '/images/dish7.jpg', isVegetarian: false, category: 'Appetizer', menu_id: 'bf5862b7-e46e-455c-b446-a6acca33f11a' },
 ];
 
 const categories = ['Hot Dishes', 'Cold Dishes', 'Soup', 'Grill', 'Appetizer', 'Dessert'];
@@ -104,16 +104,16 @@ const Home: React.FC = () => {
 
   const handleAddToCart = (dish: Dish) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.name === dish.name);
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.name === dish.name ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        return [...prevItems, { ...dish, quantity: 1 }];
-      }
+        const existingItem = prevItems.find(item => item.name === dish.name);
+        if (existingItem) {
+            return prevItems.map(item =>
+                item.name === dish.name ? { ...item, quantity: item.quantity + 1 } : item
+            );
+        } else {
+            return [...prevItems, { ...dish, quantity: 1, menu_id: dish.menu_id }];
+        }
     });
-  };
+};
 
   const handleIncreaseQuantity = (name: string) => {
     setCartItems(prevItems =>
@@ -137,13 +137,35 @@ const Home: React.FC = () => {
     setCartItems(prevItems => prevItems.filter(item => item.name !== name));
   };
 
+  const handleSubmitOrder = async () => {
+    const orderData = {
+      data: cartItems.map(item => ({
+        quantity: item.quantity.toString(),
+        menu_id: item.menu_id,
+        order_id: '40bc3ad1-41ac-431a-b9a4-69672a5e1c40', // Replace with actual order ID if available
+        note: ''// Add any notes if available
+        
+      }))
+    };
+    console.log(orderData)
+    try {
+      const response = await axios.post('http://192.168.1.206:3000/api/hotel/orders/menus/add/multiple', orderData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('Order submitted:', response.data);
+    } catch (error) {
+      console.error('Error submitting order:', error);
+    }
+  };
+
   const filteredDishes = allDishes.filter(dish =>
     dish.category === selectedCategory && dish.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="flex bg-white min-h-screen">
-      <Sidebar />
       <div className="flex-1">
         <Head>
           <title>EATOFY</title>
@@ -184,6 +206,7 @@ const Home: React.FC = () => {
         onIncreaseQuantity={handleIncreaseQuantity}
         onDecreaseQuantity={handleDecreaseQuantity}
         onRemoveItem={handleRemoveItem}
+        onSubmitOrder={handleSubmitOrder}
       />
     </div>
   );
