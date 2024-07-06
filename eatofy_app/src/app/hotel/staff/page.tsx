@@ -1,8 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 
 interface Staff {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   address: string;
@@ -18,10 +18,7 @@ interface Staff {
 }
 
 const StaffTable: React.FC = () => {
-  const [staffList, setStaffList] = useState<Staff[]>([
-    // Sample staff list can be populated here if needed
-  ]);
-
+  const [staffList, setStaffList] = useState<Staff[]>([]);
   const [isFormVisible, setFormVisible] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -38,11 +35,56 @@ const StaffTable: React.FC = () => {
     hotel_id: "a0240527-ffbd-4563-8b73-84169046da14", // Default value
   });
 
+  useEffect(() => {
+    const fetchStaffList = async () => {
+      try {
+        const response = await fetch("http://192.168.1.206:3000/api/hotel/staff/management/fetch", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ hotel_id: "a0240527-ffbd-4563-8b73-84169046da14" }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.returncode === 200 && Array.isArray(result.output)) {
+            // Map the output objects to Staff interface
+            const mappedStaffList = result.output.map((item: any) => ({
+              id: item.id,
+              first_name: item.FirstName,
+              last_name: item.LastName,
+              address: item.Address,
+              contact: item.Contact,
+              email: item.Email,
+              password: item.Password,
+              department_name: item.DepartmentName,
+              designation: item.Designation,
+              role: item.Role,
+              salary: item.Salary,
+              incentives: item.Incentives,
+              hotel_id: item.HotelId,
+            }));
+            setStaffList(mappedStaffList);
+          } else {
+            console.error("Unexpected response format:", result);
+          }
+        } else {
+          console.error("Failed to fetch staff list");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchStaffList();
+  }, []);
+
   const toggleFormVisibility = () => {
     setFormVisible(!isFormVisible);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -50,7 +92,7 @@ const StaffTable: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const newStaff = {
@@ -161,7 +203,7 @@ const StaffTable: React.FC = () => {
         </div>
 
         {isFormVisible && (
-          <div className="fixed inset-0 flex  items-center  justify-center z-50">
+          <div className="fixed inset-0 flex items-center justify-center z-50">
             <div className="fixed inset-0 bg-black opacity-50"></div>
             <div className="bg-white p-8 rounded shadow-lg z-10 w-full max-w-lg">
               <h3 className="text-lg font-bold mb-4 text-red-500">Add New Staff</h3>
