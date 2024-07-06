@@ -1,34 +1,41 @@
-"use client"
-import React, { useState } from 'react';
+"use client";
+import React, { useState } from "react";
 
 interface Staff {
   id: number;
-  name: string;
-  time: string;
-  type: string;
-  phone: string;
-  status: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  contact: string;
+  email: string;
+  password: string;
+  department_name: string;
+  designation: string;
+  role: string;
+  salary: number;
+  incentives: number;
+  hotel_id: string;
 }
 
 const StaffTable: React.FC = () => {
   const [staffList, setStaffList] = useState<Staff[]>([
-    { id: 1, name: "Ritesh", time: "8:15 AM", type: "Waiter", phone: "703594556", status: "Active" },
-    { id: 2, name: "Harsh", time: "9:00 AM", type: "Cashier", phone: "703594556", status: "Inactive" },
-    { id: 3, name: "Ayan", time: "7:01 AM", type: "Cashier", phone: "703594556", status: "Active" },
-    { id: 4, name: "Ganesh", time: "8:15 AM", type: "Waiter", phone: "703594556", status: "Active" },
-    { id: 5, name: "Himanshi", time: "10:20 AM", type: "Waiter", phone: "703594556", status: "Active" },
-    { id: 6, name: "Shashank", time: "9:15 PM", type: "Waiter", phone: "703594556", status: "Inactive" },
-    { id: 7, name: "Yanush", time: "8:00 PM", type: "Cashier", phone: "703594556", status: "Active" },
-    { id: 8, name: "Shaks", time: "8:15 PM", type: "Waiter", phone: "703594556", status: "Inactive" },
+    // Sample staff list can be populated here if needed
   ]);
 
   const [isFormVisible, setFormVisible] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    time: "",
-    type: "",
-    phone: "",
-    status: "Active",
+    first_name: "",
+    last_name: "",
+    address: "",
+    contact: "",
+    email: "",
+    password: "",
+    department_name: "",
+    designation: "",
+    role: "",
+    salary: "",
+    incentives: "",
+    hotel_id: "a0240527-ffbd-4563-8b73-84169046da14", // Default value
   });
 
   const toggleFormVisibility = () => {
@@ -43,19 +50,52 @@ const StaffTable: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const newStaff = {
-      id: staffList.length + 1,
       ...formData,
+      salary: parseFloat(formData.salary),
+      incentives: parseInt(formData.incentives),
     };
-    setStaffList([...staffList, newStaff]);
-    setFormData({ name: "", time: "", type: "", phone: "", status: "Active" });
-    setFormVisible(false);
+
+    try {
+      const response = await fetch("http://192.168.1.206:3000/api/hotel/staff/management/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newStaff),
+      });
+
+      if (response.ok) {
+        const result: Staff = await response.json();
+        setStaffList([...staffList, result]);
+        setFormData({
+          first_name: "",
+          last_name: "",
+          address: "",
+          contact: "",
+          email: "",
+          password: "",
+          department_name: "",
+          designation: "",
+          role: "",
+          salary: "",
+          incentives: "",
+          hotel_id: "a0240527-ffbd-4563-8b73-84169046da14",
+        });
+        setFormVisible(false);
+      } else {
+        console.error("Failed to add staff");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
-    <div className="flex-1 h-screen p-4 bg-white">
+    <div className={`flex-1 h-screen p-4 bg-white ${isFormVisible ? "" : ""}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-red-500 text-2xl font-bold">EATOFY</h1>
         <div className="relative">
@@ -73,10 +113,7 @@ const StaffTable: React.FC = () => {
 
       <div className="flex space-x-4 mb-4">
         <button className="bg-zinc-800 text-white px-4 py-2 rounded">Staff</button>
-        <button 
-          className="bg-zinc-800 text-white px-4 py-2 rounded"
-          onClick={toggleFormVisibility}
-        >
+        <button className="bg-zinc-800 text-white px-4 py-2 rounded" onClick={toggleFormVisibility}>
           Staff Add +
         </button>
       </div>
@@ -87,99 +124,193 @@ const StaffTable: React.FC = () => {
             <thead>
               <tr className="bg-red-500 text-white">
                 <th className="border px-4 py-2">SR#</th>
-                <th className="border px-4 py-2">Staff Name</th>
-                <th className="border px-4 py-2">Time</th>
-                <th className="border px-4 py-2">Type</th>
-                <th className="border px-4 py-2">Phone No</th>
-                <th className="border px-4 py-2">Status</th>
+                <th className="border px-4 py-2">First Name</th>
+                <th className="border px-4 py-2">Last Name</th>
+                <th className="border px-4 py-2">Address</th>
+                <th className="border px-4 py-2">Contact</th>
+                <th className="border px-4 py-2">Email</th>
+                <th className="border px-4 py-2">Password</th>
+                <th className="border px-4 py-2">Department</th>
+                <th className="border px-4 py-2">Designation</th>
+                <th className="border px-4 py-2">Role</th>
+                <th className="border px-4 py-2">Salary</th>
+                <th className="border px-4 py-2">Incentives</th>
+                <th className="border px-4 py-2">Hotel ID</th>
               </tr>
             </thead>
             <tbody>
               {staffList.map((staff, index) => (
                 <tr key={staff.id} className={index % 2 === 0 ? "bg-zinc-200" : ""}>
                   <td className="border px-4 py-2">{staff.id}</td>
-                  <td className="border px-4 py-2">{staff.name}</td>
-                  <td className="border px-4 py-2">{staff.time}</td>
-                  <td className="border px-4 py-2">{staff.type}</td>
-                  <td className="border px-4 py-2">{staff.phone}</td>
-                  <td className={`border px-4 py-2 ${staff.status === "Active" ? "text-green-500" : "text-red-500"}`}>
-                    {staff.status}
-                  </td>
+                  <td className="border px-4 py-2">{staff.first_name}</td>
+                  <td className="border px-4 py-2">{staff.last_name}</td>
+                  <td className="border px-4 py-2">{staff.address}</td>
+                  <td className="border px-4 py-2">{staff.contact}</td>
+                  <td className="border px-4 py-2">{staff.email}</td>
+                  <td className="border px-4 py-2">{staff.password}</td>
+                  <td className="border px-4 py-2">{staff.department_name}</td>
+                  <td className="border px-4 py-2">{staff.designation}</td>
+                  <td className="border px-4 py-2">{staff.role}</td>
+                  <td className="border px-4 py-2">{staff.salary}</td>
+                  <td className="border px-4 py-2">{staff.incentives}</td>
+                  <td className="border px-4 py-2">{staff.hotel_id}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
         {isFormVisible && (
-          <div className="w-1/3 p-4 border-l bg-slate-100 border-red-500">
-            <h3 className="text-lg font-bold mb-4 text-red-500">Add New Staff</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block mb-2 text-black">Staff Name</label>
+          <div className="fixed inset-0 flex  items-center  justify-center z-50">
+            <div className="fixed inset-0 bg-black opacity-50"></div>
+            <div className="bg-white p-8 rounded shadow-lg z-10 w-full max-w-lg">
+              <h3 className="text-lg font-bold mb-4 text-red-500">Add New Staff</h3>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Address</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Contact</label>
+                  <input
+                    type="text"
+                    name="contact"
+                    value={formData.contact}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Department Name</label>
+                  <input
+                    type="text"
+                    name="department_name"
+                    value={formData.department_name}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Designation</label>
+                  <input
+                    type="text"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Role</label>
+                  <input
+                    type="text"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Salary</label>
+                  <input
+                    type="number"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2 text-black">Incentives</label>
+                  <input
+                    type="number"
+                    name="incentives"
+                    value={formData.incentives}
+                    onChange={handleInputChange}
+                    className="border rounded px-4 py-2 text-black border-red-500 w-full"
+                    required
+                  />
+                </div>
+                {/* Hidden input for hotel_id */}
                 <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
+                  type="hidden"
+                  name="hotel_id"
+                  value={formData.hotel_id}
                   onChange={handleInputChange}
-                  className="border rounded px-4 py-2 text-black border-red-500 w-full"
-                  required
                 />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2 text-black">Time</label>
-                <input
-                  type="text"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
-                  className="border rounded px-4 py-2 border-red-500 text-black w-full"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2 text-black">Type</label>
-                <input
-                  type="text"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  className="border rounded border-red-500 px-4 py-2 text-black w-full"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2 text-black">Phone No</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="border border-red-500 rounded px-4 py-2 text-black w-full"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-black mb-2">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="border border-red-500 rounded bg-withe px-4 py-2 w-full"
-                  required
+                <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded w-full">
+                  Add Staff
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleFormVisibility}
+                  className="bg-gray-500 text-white px-4 py-2 rounded w-full mt-2"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-              <button type="submit" className="bg-red-500 text-white px-4 py-2 rounded w-full">
-                Add Staff
-              </button>
-            </form>
+                  Cancel
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>
     </div>
   );
-}
+};
 
 export default StaffTable;
